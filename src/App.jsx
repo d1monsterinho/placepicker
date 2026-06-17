@@ -5,6 +5,8 @@ import Modal from './components/Modal.jsx';
 import DeleteConfirmation from './components/DeleteConfirmation.jsx';
 import logoImg from './assets/logo.png';
 import AvailablePlaces from './components/AvailablePlaces.jsx';
+import ErrorDialog from './components/Error.jsx';
+import {updateUserCardplaces} from "./httpUtils.js";
 
 function App() {
   const selectedPlace = useRef();
@@ -13,6 +15,8 @@ function App() {
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
+  const [error, setError] = useState();
+
   function handleStartRemovePlace(place) {
     setModalIsOpen(true);
     selectedPlace.current = place;
@@ -20,6 +24,17 @@ function App() {
 
   function handleStopRemovePlace() {
     setModalIsOpen(false);
+  }
+
+  async function updateSelectedPlaces(selectedPlaces) {
+    try {
+      await updateUserCardplaces(selectedPlaces);
+    } catch (error) {
+      setError({
+        title: error.title || 'Data Update Error',
+        message: error.message || `Unknown Error Occurred During Data Update`,
+      });
+    }
   }
 
   function handleSelectPlace(selectedPlace) {
@@ -32,6 +47,8 @@ function App() {
       }
       return [selectedPlace, ...prevPickedPlaces];
     });
+
+    updateSelectedPlaces([...userPlaces, selectedPlace]);
   }
 
   const handleRemovePlace = useCallback(async function handleRemovePlace() {
@@ -41,6 +58,14 @@ function App() {
 
     setModalIsOpen(false);
   }, []);
+
+  function handleErrorConfirm() {
+    setError(undefined);
+  }
+
+  if (error) {
+    return <ErrorDialog title={error.title} message={error.message} onConfirm={handleErrorConfirm} />
+  }
 
   return (
     <>

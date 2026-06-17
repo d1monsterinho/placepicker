@@ -3,6 +3,7 @@ import ErrorDialog from './Error.jsx';
 
 import {useEffect, useState} from "react";
 import {sortPlacesByDistance} from "../loc.js";
+import {fetchAllCardplaces} from "../httpUtils.js";
 
 export default function AvailablePlaces({ onSelectPlace }) {
   const [availablePlaces, setAvailablePlaces] = useState([]);
@@ -10,30 +11,22 @@ export default function AvailablePlaces({ onSelectPlace }) {
   const [error, setError] = useState();
 
   useEffect(() => {
-    const getPlacesUrl = 'http://localhost:3000/places';
-
     async function fetchPlaces() {
       setIsLoading(true);
 
       try {
-        const response = await fetch(getPlacesUrl);
-
-        if (!response.ok) {
-          throw new Error()
-        }
-
-        const body = await response.json();
+        const cardplaces = await fetchAllCardplaces();
 
         navigator.geolocation.getCurrentPosition((pos) => {
-          setAvailablePlaces(sortPlacesByDistance(body.places, pos.coords.latitude, pos.coords.longitude));
+          setAvailablePlaces(sortPlacesByDistance(cardplaces, pos.coords.latitude, pos.coords.longitude));
           setIsLoading(false);
         });
       } catch (error) {
         setIsLoading(false);
         setError({
           title: error.title || 'Data Fetching Error',
-          message: error.message || `Error Occurred Related to Data Fetching: ${getPlacesUrl}`,
-        })
+          message: error.message || `Unknown Error Occurred During Data Fetching`,
+        });
       }
     }
 

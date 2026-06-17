@@ -2,6 +2,7 @@ import Places from './Places.jsx';
 import ErrorDialog from './Error.jsx';
 
 import {useEffect, useState} from "react";
+import {sortPlacesByDistance} from "../loc.js";
 
 export default function AvailablePlaces({ onSelectPlace }) {
   const [availablePlaces, setAvailablePlaces] = useState([]);
@@ -22,15 +23,17 @@ export default function AvailablePlaces({ onSelectPlace }) {
         }
 
         const body = await response.json();
-        setAvailablePlaces(body.places);
+
+        navigator.geolocation.getCurrentPosition((pos) => {
+          setAvailablePlaces(sortPlacesByDistance(body.places, pos.coords.latitude, pos.coords.longitude));
+          setIsLoading(false);
+        });
       } catch (error) {
-        console.log('in catch')
+        setIsLoading(false);
         setError({
           title: error.title || 'Data Fetching Error',
           message: error.message || `Error Occurred Related to Data Fetching: ${getPlacesUrl}`,
         })
-      } finally {
-        setIsLoading(false);
       }
     }
 

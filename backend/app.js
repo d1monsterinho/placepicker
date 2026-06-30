@@ -28,6 +28,7 @@ app.get('/places', async (req, res) => {
 
 app.get('/user-places', async (req, res) => {
   const fileContent = await fs.readFile('./data/user-places.json');
+  console.log('endpoint is called');
 
   const places = JSON.parse(fileContent);
 
